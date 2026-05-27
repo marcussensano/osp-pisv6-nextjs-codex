@@ -50,7 +50,7 @@ export const STANDARD_RESPONSIVE_SPACING = {
 export const STANDARD_TYPOGRAPHY = {
   fontFamily: {
     pdf: "Calibri",
-    repoDefault: "Open Sans",
+    repoDefault: "Inter",
   },
   h1: {
     fontSize: {

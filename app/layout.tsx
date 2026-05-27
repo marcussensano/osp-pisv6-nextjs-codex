@@ -3,8 +3,8 @@ import { Provider } from "./provider";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Zenith Dashboard",
-  description: "A premium dark-mode admin dashboard for commerce analytics.",
+  title: "One St. Peter Operations",
+  description: "Insurance planholder operations dashboard and accounts summary.",
 };
 
 export default function RootLayout({

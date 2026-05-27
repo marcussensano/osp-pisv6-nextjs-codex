@@ -1,0 +1,7 @@
+interface:
+  display_name: "Web Design Standards"
+  short_description: "Polished, accessible responsive UI"
+  default_prompt: "Use $web-design-standards to review and improve this interface for responsive, accessible production UX."
+
+policy:
+  allow_implicit_invocation: true
