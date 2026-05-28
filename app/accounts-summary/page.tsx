@@ -35,7 +35,7 @@ import {
   UsersRound,
   WalletCards,
 } from "lucide-react";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { AppShell } from "../components/AppShell";
 import { DISPLAY_STATUS_STYLES } from "../theme/design-tokens";
 
@@ -119,7 +119,7 @@ const plans: PlanRecord[] = [
   },
 ];
 
-const selectedPlan = plans[0];
+const initialSelectedPlan = plans[0];
 
 const accountStats = [
   {
@@ -182,18 +182,25 @@ const accountDetailTabs: AccountDetailTab[] = [
 ];
 
 const planTabs = [
-  { label: "Plan Details", icon: FileText, active: true },
+  { label: "Plan Details", icon: FileText },
   { label: "Beneficiaries", icon: UsersRound },
   { label: "Statement of Accounts", icon: FileCheck2 },
   { label: "Health Declaration", icon: HeartPulse },
   { label: "Loan", icon: IdCard },
   { label: "Servicing", icon: RefreshCcw },
   { label: "Transfer History", icon: History },
-];
+] as const;
+
+type PlanTabLabel = (typeof planTabs)[number]["label"];
 
 export default function AccountsSummaryPage() {
   const [activeAccountTab, setActiveAccountTab] =
     useState<AccountDetailTab>("Profile");
+  const [selectedPlanNo, setSelectedPlanNo] = useState(
+    initialSelectedPlan.lpaNo,
+  );
+  const selectedPlan =
+    plans.find((plan) => plan.lpaNo === selectedPlanNo) ?? initialSelectedPlan;
 
   return (
     <AppShell
@@ -201,7 +208,7 @@ export default function AccountsSummaryPage() {
       eyebrow={`Home / Planholder / ${planholder.id}`}
     >
       <VStack align="stretch" gap="4" w="100%" maxW="1440px" mx="auto">
-        <AccountIdentityBar />
+        <AccountIdentityBar selectedPlan={selectedPlan} />
 
         <SimpleGrid columns={{ base: 1, sm: 2, xl: 4 }} gap="3">
           {accountStats.map((stat) => (
@@ -214,13 +221,16 @@ export default function AccountsSummaryPage() {
           onTabChange={setActiveAccountTab}
         />
 
-        <PlanWorkspace />
+        <PlanWorkspace
+          selectedPlan={selectedPlan}
+          onSelectPlan={setSelectedPlanNo}
+        />
       </VStack>
     </AppShell>
   );
 }
 
-function AccountIdentityBar() {
+function AccountIdentityBar({ selectedPlan }: { selectedPlan: PlanRecord }) {
   return (
     <Box
       border="1px solid"
@@ -312,9 +322,14 @@ function AccountIdentityBar() {
             _hover={{ bg: "brand.darkGreen" }}
             transition="background-color var(--motion-fast) var(--motion-ease-out), transform var(--motion-fast) var(--motion-ease-out)"
             _active={{ transform: "translateY(1px)" }}
+            onClick={() =>
+              document
+                .getElementById("selected-plan-panel")
+                ?.scrollIntoView({ behavior: "smooth", block: "start" })
+            }
           >
             <RefreshCcw size={15} />
-            Review
+            Review {selectedPlan.status === "Lapsed" ? "Lapsed" : "Selected"} Plan
           </Button>
           <Button
             flex={{ base: "1", sm: "unset" }}
@@ -329,9 +344,10 @@ function AccountIdentityBar() {
               borderColor: "brand.primaryGreen",
             }}
             _active={{ transform: "translateY(1px)" }}
+            onClick={() => window.print()}
           >
             <FileText size={15} />
-            Export
+            Export Summary
           </Button>
         </HStack>
       </Flex>
@@ -718,7 +734,34 @@ function EmptyState() {
   );
 }
 
-function PlanWorkspace() {
+function PlanWorkspace({
+  selectedPlan,
+  onSelectPlan,
+}: {
+  selectedPlan: PlanRecord;
+  onSelectPlan: (lpaNo: string) => void;
+}) {
+  const [searchQuery, setSearchQuery] = useState("");
+  const normalizedQuery = searchQuery.trim().toLowerCase();
+  const visiblePlans = useMemo(
+    () =>
+      plans.filter((plan) =>
+        [
+          plan.lpaNo,
+          plan.insured,
+          plan.plan,
+          plan.planClass,
+          plan.status,
+          plan.branch,
+          plan.agent,
+        ]
+          .join(" ")
+          .toLowerCase()
+          .includes(normalizedQuery),
+      ),
+    [normalizedQuery],
+  );
+
   return (
     <Box
       bg="brand.white"
@@ -803,15 +846,23 @@ function PlanWorkspace() {
               <PlanSearchInput
                 display={{ base: "none", md: "block" }}
                 width="260px"
+                value={searchQuery}
+                onChange={setSearchQuery}
               />
             </Flex>
 
             <Box display={{ base: "block", md: "none" }} mb="3">
-              <PlanSearchInput />
+              <PlanSearchInput value={searchQuery} onChange={setSearchQuery} />
             </Box>
 
             <Box display={{ base: "none", md: "block" }}>
-              <PlanListTable />
+              <PlanListTable
+                plans={visiblePlans}
+                selectedPlanNo={selectedPlan.lpaNo}
+                searchQuery={searchQuery}
+                onSelectPlan={onSelectPlan}
+                onClearSearch={() => setSearchQuery("")}
+              />
             </Box>
 
             <VStack
@@ -819,17 +870,25 @@ function PlanWorkspace() {
               align="stretch"
               gap="2"
             >
-              {plans.map((plan) => (
-                <PlanListItem
-                  key={plan.lpaNo}
-                  plan={plan}
-                  active={plan.lpaNo === selectedPlan.lpaNo}
+              {visiblePlans.length > 0 ? (
+                visiblePlans.map((plan) => (
+                  <PlanListItem
+                    key={plan.lpaNo}
+                    plan={plan}
+                    active={plan.lpaNo === selectedPlan.lpaNo}
+                    onSelect={() => onSelectPlan(plan.lpaNo)}
+                  />
+                ))
+              ) : (
+                <PlanSearchEmptyState
+                  searchQuery={searchQuery}
+                  onClearSearch={() => setSearchQuery("")}
                 />
-              ))}
+              )}
             </VStack>
           </Box>
 
-          <SelectedPlan plan={selectedPlan} />
+          <SelectedPlan key={selectedPlan.lpaNo} plan={selectedPlan} />
         </Grid>
       </Box>
     </Box>
@@ -839,9 +898,13 @@ function PlanWorkspace() {
 function PlanSearchInput({
   display,
   width = "100%",
+  value,
+  onChange,
 }: {
   display?: Record<string, string> | string;
   width?: Record<string, string> | string;
+  value: string;
+  onChange: (value: string) => void;
 }) {
   return (
     <Box position="relative" display={display} w={width}>
@@ -858,10 +921,12 @@ function PlanSearchInput({
       </Box>
       <Input
         aria-label="Search by LPA number"
+        value={value}
+        onChange={(event) => onChange(event.target.value)}
         h="40px"
         pl="10"
         bg="brand.subtleBg"
-        placeholder="Search LPA No."
+        placeholder="Search LPA, name, plan, branch..."
         borderColor="brand.neutralBorder"
         color="brand.neutralText"
         _placeholder={{ color: "text.muted" }}
@@ -875,7 +940,19 @@ function PlanSearchInput({
   );
 }
 
-function PlanListTable() {
+function PlanListTable({
+  plans,
+  selectedPlanNo,
+  searchQuery,
+  onSelectPlan,
+  onClearSearch,
+}: {
+  plans: PlanRecord[];
+  selectedPlanNo: string;
+  searchQuery: string;
+  onSelectPlan: (lpaNo: string) => void;
+  onClearSearch: () => void;
+}) {
   return (
     <Box
       border="1px solid"
@@ -904,77 +981,150 @@ function PlanListTable() {
         ))}
       </Grid>
 
-      {plans.map((plan) => {
-        const active = plan.lpaNo === selectedPlan.lpaNo;
+      {plans.length > 0 ? (
+        plans.map((plan) => {
+          const active = plan.lpaNo === selectedPlanNo;
 
-        return (
-          <Grid
-            key={plan.lpaNo}
-            as="button"
-            templateColumns="1.15fr 0.95fr 0.7fr 0.9fr 0.85fr"
-            gap="0"
-            w="100%"
-            textAlign="left"
-            bg={active ? "brand.successBg" : "brand.white"}
-            borderBottom="1px solid"
-            borderColor="brand.neutralBorder"
-            cursor="pointer"
-            _last={{ borderBottom: "0" }}
-            transition="background-color var(--motion-fast) var(--motion-ease-out), transform var(--motion-fast) var(--motion-ease-out)"
-            _hover={{ bg: "brand.successBg", transform: "translateX(2px)" }}
-            _active={{ transform: "translateX(1px)" }}
-            _focusVisible={{
-              outline: "2px solid",
-              outlineColor: "brand.primaryGreen",
-              outlineOffset: "-2px",
-            }}
-          >
-            <Box px="3" py="3">
-              <Text color="brand.neutralText" fontSize="14px" fontWeight="600">
-                {plan.lpaNo}
-              </Text>
-              <Text color="text.muted" fontSize="12px">
-                {plan.insured}
-              </Text>
-            </Box>
-            <Box px="3" py="3">
-              <Text color="brand.neutralText" fontSize="14px" fontWeight="600">
-                {plan.plan}
-              </Text>
-              <Text color="text.muted" fontSize="12px">
-                {plan.planClass}
-              </Text>
-            </Box>
-            <Flex align="center" px="3" py="3">
-              <PlanBadge status={plan.status} />
-            </Flex>
-            <Flex align="center" px="3" py="3">
-              <Text color="brand.accentText" fontSize="12px" fontWeight="600">
-                {plan.insuranceStatus}
-              </Text>
-            </Flex>
-            <Flex align="center" px="3" py="3">
-              <Text color="text.secondary" fontSize="12px" fontWeight="500">
-                {plan.branch}
-              </Text>
-            </Flex>
-          </Grid>
-        );
-      })}
+          return (
+            <Grid
+              key={plan.lpaNo}
+              as="button"
+              aria-pressed={active}
+              aria-label={`Review plan ${plan.lpaNo}`}
+              templateColumns="1.15fr 0.95fr 0.7fr 0.9fr 0.85fr"
+              gap="0"
+              w="100%"
+              textAlign="left"
+              bg={active ? "brand.successBg" : "brand.white"}
+              borderBottom="1px solid"
+              borderColor="brand.neutralBorder"
+              cursor="pointer"
+              _last={{ borderBottom: "0" }}
+              transition="background-color var(--motion-fast) var(--motion-ease-out), transform var(--motion-fast) var(--motion-ease-out)"
+              _hover={{ bg: "brand.successBg", transform: "translateX(2px)" }}
+              _active={{ transform: "translateX(1px)" }}
+              _focusVisible={{
+                outline: "2px solid",
+                outlineColor: "brand.primaryGreen",
+                outlineOffset: "-2px",
+              }}
+              onClick={() => onSelectPlan(plan.lpaNo)}
+            >
+              <Box px="3" py="3">
+                <Text color="brand.neutralText" fontSize="14px" fontWeight="600">
+                  {plan.lpaNo}
+                </Text>
+                <Text color="text.muted" fontSize="12px">
+                  {plan.insured}
+                </Text>
+              </Box>
+              <Box px="3" py="3">
+                <Text color="brand.neutralText" fontSize="14px" fontWeight="600">
+                  {plan.plan}
+                </Text>
+                <Text color="text.muted" fontSize="12px">
+                  {plan.planClass}
+                </Text>
+              </Box>
+              <Flex align="center" px="3" py="3">
+                <PlanBadge status={plan.status} />
+              </Flex>
+              <Flex align="center" px="3" py="3">
+                <Text color="brand.accentText" fontSize="12px" fontWeight="600">
+                  {plan.insuranceStatus}
+                </Text>
+              </Flex>
+              <Flex align="center" px="3" py="3">
+                <Text color="text.secondary" fontSize="12px" fontWeight="500">
+                  {plan.branch}
+                </Text>
+              </Flex>
+            </Grid>
+          );
+        })
+      ) : (
+        <PlanSearchEmptyState
+          searchQuery={searchQuery}
+          onClearSearch={onClearSearch}
+        />
+      )}
     </Box>
+  );
+}
+
+function PlanSearchEmptyState({
+  searchQuery,
+  onClearSearch,
+}: {
+  searchQuery: string;
+  onClearSearch: () => void;
+}) {
+  return (
+    <Flex
+      align="center"
+      justify="center"
+      direction="column"
+      minH="164px"
+      p="5"
+      bg="brand.subtleBg"
+      textAlign="center"
+    >
+      <Flex
+        align="center"
+        justify="center"
+        w="38px"
+        h="38px"
+        borderRadius="full"
+        bg="brand.white"
+        color="brand.accentText"
+        border="1px solid"
+        borderColor="brand.neutralBorder"
+        mb="3"
+      >
+        <Search size={18} />
+      </Flex>
+      <Text color="brand.neutralText" fontSize="14px" fontWeight="700">
+        No plans match &quot;{searchQuery.trim()}&quot;
+      </Text>
+      <Text color="text.muted" fontSize="13px" maxW="300px" mt="1">
+        Try a different LPA number, plan name, branch, or planholder name.
+      </Text>
+      <Button
+        type="button"
+        size="sm"
+        variant="outline"
+        borderColor="brand.softGreen"
+        color="brand.accentText"
+        bg="brand.white"
+        mt="4"
+        onClick={onClearSearch}
+        _hover={{ bg: "brand.successBg", borderColor: "brand.primaryGreen" }}
+        _focusVisible={{
+          outline: "2px solid",
+          outlineColor: "brand.primaryGreen",
+          outlineOffset: "2px",
+        }}
+      >
+        Clear Search
+      </Button>
+    </Flex>
   );
 }
 
 function PlanListItem({
   plan,
   active,
+  onSelect,
 }: {
   plan: PlanRecord;
   active?: boolean;
+  onSelect: () => void;
 }) {
   return (
     <Button
       type="button"
+      aria-pressed={active}
+      aria-label={`Review plan ${plan.lpaNo}`}
       justifyContent="flex-start"
       textAlign="left"
       w="100%"
@@ -1000,6 +1150,7 @@ function PlanListItem({
         outlineColor: "brand.primaryGreen",
         outlineOffset: "2px",
       }}
+      onClick={onSelect}
     >
       <Flex align="stretch" w="100%">
         <Box
@@ -1064,8 +1215,13 @@ function PlanListItem({
 }
 
 function SelectedPlan({ plan }: { plan: PlanRecord }) {
+  const [activePlanTab, setActivePlanTab] =
+    useState<PlanTabLabel>("Plan Details");
+  const [actionNotice, setActionNotice] = useState("");
+
   return (
     <Box
+      id="selected-plan-panel"
       border="1px solid"
       borderColor="brand.neutralBorder"
       borderRadius="lg"
@@ -1134,6 +1290,11 @@ function SelectedPlan({ plan }: { plan: PlanRecord }) {
             _hover={{ bg: "brand.darkGreen" }}
             transition="background-color var(--motion-fast) var(--motion-ease-out), transform var(--motion-fast) var(--motion-ease-out)"
             _active={{ transform: "translateY(1px)" }}
+            onClick={() =>
+              setActionNotice(
+                `Reinstatement review started for ${plan.lpaNo}. Confirm eligibility before saving changes.`,
+              )
+            }
           >
             <RefreshCcw size={15} />
             Reinstate
@@ -1149,6 +1310,13 @@ function SelectedPlan({ plan }: { plan: PlanRecord }) {
             _hover={{ bg: "brand.dangerSurface" }}
             transition="background-color var(--motion-fast) var(--motion-ease-out), border-color var(--motion-fast) var(--motion-ease-out), transform var(--motion-fast) var(--motion-ease-out)"
             _active={{ transform: "translateY(1px)" }}
+            onClick={() => {
+              if (window.confirm(`Delete plan ${plan.lpaNo}? This action needs approval.`)) {
+                setActionNotice(
+                  `Delete request prepared for ${plan.lpaNo}. Approval is required before the record is removed.`,
+                );
+              }
+            }}
           >
             <Trash2 size={15} />
             Delete
@@ -1156,25 +1324,57 @@ function SelectedPlan({ plan }: { plan: PlanRecord }) {
         </HStack>
       </Grid>
 
+      {actionNotice ? (
+        <Box
+          mx="4"
+          mt="4"
+          p="3"
+          bg="brand.successBg"
+          border="1px solid"
+          borderColor="brand.softGreen"
+          borderRadius="md"
+          color="brand.accentText"
+          fontSize="13px"
+          fontWeight="600"
+          role="status"
+        >
+          {actionNotice}
+        </Box>
+      ) : null}
+
       <Box px="4" py="3" overflowX="auto">
-        <HStack gap="2" minW={{ base: "760px", xl: "auto" }}>
+        <HStack
+          role="tablist"
+          aria-label="Plan record sections"
+          gap="2"
+          minW={{ base: "760px", xl: "auto" }}
+        >
           {planTabs.map((tab) => {
             const Icon = tab.icon;
+            const active = activePlanTab === tab.label;
 
             return (
               <Button
                 key={tab.label}
+                role="tab"
+                aria-selected={active}
                 size="xs"
-                variant={tab.active ? "solid" : "ghost"}
-                bg={tab.active ? "brand.primaryGreen" : "brand.controlMutedBg"}
-                color={tab.active ? "text.inverse" : "text.secondary"}
+                variant={active ? "solid" : "ghost"}
+                bg={active ? "brand.primaryGreen" : "brand.controlMutedBg"}
+                color={active ? "text.inverse" : "text.secondary"}
                 borderRadius="full"
                 _hover={{
-                  bg: tab.active ? "brand.darkGreen" : "brand.successBg",
-                  color: tab.active ? "text.inverse" : "brand.accentText",
+                  bg: active ? "brand.darkGreen" : "brand.successBg",
+                  color: active ? "text.inverse" : "brand.accentText",
                 }}
                 transition="background-color var(--motion-fast) var(--motion-ease-out), color var(--motion-fast) var(--motion-ease-out), transform var(--motion-fast) var(--motion-ease-out)"
                 _active={{ transform: "scale(0.98)" }}
+                _focusVisible={{
+                  outline: "2px solid",
+                  outlineColor: "brand.primaryGreen",
+                  outlineOffset: "2px",
+                }}
+                onClick={() => setActivePlanTab(tab.label)}
               >
                 <Icon size={13} />
                 {tab.label}
@@ -1186,45 +1386,95 @@ function SelectedPlan({ plan }: { plan: PlanRecord }) {
 
       <Separator borderColor="brand.neutralBorder" />
 
-      <Box p="4">
-        <PlanSummaryList
-          rows={[
-            ["Planholder", plan.insured],
-            ["Account Status", plan.status],
-            ["Insurance Status", plan.insuranceStatus],
-            ["Plan", plan.plan],
-            ["Mode", "Annual"],
-            ["Term", plan.payingYears],
-            ["Plan Class", plan.planClass],
-            ["Account Class", plan.planClass],
-            ["Plan Code", "LISA10"],
-            ["Contract Price", plan.contractPrice],
-            ["Installment Amount", plan.installmentAmount],
-            ["Total Annual Payable", plan.contractPrice],
-            ["Effectivity Date", plan.effectivityDate],
-            ["Maturity Date", plan.maturityDate],
-            ["Branch", plan.branch],
-            ["Sales Agent", plan.agent],
-            ["Service Only", plan.serviceOnly],
-          ]}
-        />
+      <Box p="4" role="tabpanel">
+        {activePlanTab === "Plan Details" ? (
+          <>
+            <PlanSummaryList
+              rows={[
+                ["Planholder", plan.insured],
+                ["Account Status", plan.status],
+                ["Insurance Status", plan.insuranceStatus],
+                ["Plan", plan.plan],
+                ["Mode", "Annual"],
+                ["Term", plan.payingYears],
+                ["Plan Class", plan.planClass],
+                ["Account Class", plan.planClass],
+                ["Plan Code", "LISA10"],
+                ["Contract Price", plan.contractPrice],
+                ["Installment Amount", plan.installmentAmount],
+                ["Total Annual Payable", plan.contractPrice],
+                ["Effectivity Date", plan.effectivityDate],
+                ["Maturity Date", plan.maturityDate],
+                ["Branch", plan.branch],
+                ["Sales Agent", plan.agent],
+                ["Service Only", plan.serviceOnly],
+              ]}
+            />
 
-        <Box mt="4">
-          <Text color="text.muted" fontSize="12px" fontWeight="600" mb="2">
-            Remarks
-          </Text>
-          <Textarea
-            readOnly
-            value={plan.remarks}
-            minH="76px"
-            bg="brand.subtleBg"
-            borderColor="brand.neutralBorder"
-            color="brand.neutralText"
-            resize="vertical"
-          />
-        </Box>
+            <Box mt="4">
+              <Text color="text.muted" fontSize="12px" fontWeight="600" mb="2">
+                Remarks
+              </Text>
+              <Textarea
+                readOnly
+                aria-label="Plan remarks"
+                value={plan.remarks}
+                minH="76px"
+                bg="brand.subtleBg"
+                borderColor="brand.neutralBorder"
+                color="brand.neutralText"
+                resize="vertical"
+              />
+            </Box>
+          </>
+        ) : (
+          <PlanTabEmptyState tab={activePlanTab} plan={plan} />
+        )}
       </Box>
     </Box>
+  );
+}
+
+function PlanTabEmptyState({
+  tab,
+  plan,
+}: {
+  tab: PlanTabLabel;
+  plan: PlanRecord;
+}) {
+  return (
+    <Flex
+      align="center"
+      justify="center"
+      direction="column"
+      minH="220px"
+      textAlign="center"
+      bg="brand.subtleBg"
+      border="1px dashed"
+      borderColor="brand.neutralBorder"
+      borderRadius="lg"
+      p="6"
+    >
+      <Flex
+        align="center"
+        justify="center"
+        w="42px"
+        h="42px"
+        borderRadius="full"
+        bg="brand.successBg"
+        color="brand.accentText"
+        mb="3"
+      >
+        <FileText size={20} />
+      </Flex>
+      <Text color="brand.neutralText" fontSize="15px" fontWeight="700">
+        No {tab.toLowerCase()} records shown
+      </Text>
+      <Text color="text.muted" fontSize="14px" maxW="360px" mt="1">
+        {plan.lpaNo} is selected. Use Plan Details for the current summary, or
+        check back when this section has records to review.
+      </Text>
+    </Flex>
   );
 }
 

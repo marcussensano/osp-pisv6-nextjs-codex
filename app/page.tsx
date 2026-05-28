@@ -3,6 +3,7 @@
 import {
   Badge,
   Box,
+  Button,
   Flex,
   Grid,
   HStack,
@@ -12,6 +13,8 @@ import {
   Text,
 } from "@chakra-ui/react";
 import {
+  ArrowDownRight,
+  ArrowRight,
   ArrowUpRight,
   BadgeCheck,
   Clock3,
@@ -19,6 +22,7 @@ import {
   Users,
 } from "lucide-react";
 import Image from "next/image";
+import Link from "next/link";
 import { AppShell } from "./components/AppShell";
 
 const stats = [
@@ -72,6 +76,8 @@ export default function Home() {
         <SimpleGrid columns={{ base: 1, sm: 2, xl: 4 }} gap="4">
           {stats.map((item) => {
             const Icon = item.icon;
+            const isImprovingReduction = item.change.startsWith("-");
+            const TrendIcon = isImprovingReduction ? ArrowDownRight : ArrowUpRight;
 
             return (
               <Box
@@ -104,8 +110,11 @@ export default function Home() {
                   </Flex>
                 </Flex>
                 <HStack mt="4" color="brand.accentText" fontSize="14px" fontWeight="600">
-                  <ArrowUpRight size={15} />
-                  <Text>{item.change} this month</Text>
+                  <TrendIcon size={15} />
+                  <Text>
+                    {item.change} this month
+                    {isImprovingReduction ? " (improved)" : ""}
+                  </Text>
                 </HStack>
               </Box>
             );
@@ -264,6 +273,28 @@ function BrandOverview() {
             A focused dashboard for monitoring life plan operations, account
             verification, and service requests across active branches.
           </Text>
+          <HStack gap="3" mt="5" wrap="wrap">
+            <Button
+              asChild
+              size="sm"
+              bg="brand.primaryGreen"
+              color="text.inverse"
+              _hover={{ bg: "brand.darkGreen" }}
+              _focusVisible={{
+                outline: "2px solid",
+                outlineColor: "brand.primaryGreen",
+                outlineOffset: "2px",
+              }}
+            >
+              <Link href="/accounts-summary">
+                Open Accounts Summary
+                <ArrowRight size={15} />
+              </Link>
+            </Button>
+            <Text color="text.muted" fontSize="13px" fontWeight="500">
+              Start with the lapsed plan that needs review.
+            </Text>
+          </HStack>
         </Box>
 
         <SimpleGrid columns={{ base: 1, sm: 3 }} gap="3">
