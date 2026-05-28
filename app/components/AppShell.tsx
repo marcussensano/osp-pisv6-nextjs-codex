@@ -20,6 +20,7 @@ import {
   ShieldCheck,
   X,
 } from "lucide-react";
+import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
@@ -137,6 +138,10 @@ function getPreferenceCssVars(
     "--osp-colors-brand-accent-text": dark ? palette.soft : palette.hover,
     "--osp-colors-brand-soft-green": palette.soft,
     "--osp-colors-brand-success-bg": dark ? palette.darkTint : palette.tint,
+    "--osp-colors-brand-selected-surface": dark ? "#111827" : palette.tint,
+    "--osp-colors-brand-control-muted-bg": dark ? "#1E293B" : BRAND_COLORS.mutedBg,
+    "--osp-colors-brand-danger-surface": dark ? "rgba(191, 31, 47, 0.16)" : BRAND_COLORS.errorBg,
+    "--osp-colors-brand-danger-text": dark ? "#FB7185" : BRAND_COLORS.destructiveRed,
     "--osp-colors-brand-white": dark ? "#0F172A" : "#FFFFFF",
     "--osp-colors-brand-neutral-text": dark ? "#F8FAFC" : "#22223B",
     "--osp-colors-brand-neutral-border": dark ? "#1E293B" : "#E5E7EB",
@@ -512,13 +517,23 @@ function Sidebar({
         <Flex
           align="center"
           justify="center"
-          w="34px"
-          h="34px"
+          w="38px"
+          h="38px"
           borderRadius="md"
-        bg="brand.primaryGreen"
-        color="text.inverse"
+          bg="brand.white"
+          border="1px solid"
+          borderColor="brand.neutralBorder"
+          overflow="hidden"
+          flexShrink="0"
         >
-          <ShieldCheck size={20} />
+          <Image
+            src="/images/logo/icon.png"
+            alt="St. Peter"
+            width={34}
+            height={34}
+            priority
+            style={{ width: "34px", height: "34px", objectFit: "contain" }}
+          />
         </Flex>
         <Box
           flex="1"
@@ -526,9 +541,15 @@ function Sidebar({
           opacity={isCompact ? "0" : "1"}
           transition="opacity var(--motion-fast) var(--motion-ease-out)"
         >
-          <Text color="brand.accentText" fontWeight="700" lineHeight="1.05">
-            One St. Peter
-          </Text>
+          <Box position="relative" w="150px" h="30px" mb="0.5">
+            <Image
+              src="/images/osp-chakra-reusable-components/stpeter-logo.png"
+              alt="St. Peter Life Plan and Chapels"
+              fill
+              sizes="150px"
+              style={{ objectFit: "contain", objectPosition: "left center" }}
+            />
+          </Box>
           <Text color="text.secondary" fontSize="12px" fontWeight="500">
             Life Plan Operations
           </Text>

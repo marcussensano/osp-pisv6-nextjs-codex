@@ -20,9 +20,7 @@ import {
   Banknote,
   BriefcaseBusiness,
   Building2,
-  CalendarDays,
   CheckCircle2,
-  Clock3,
   FileCheck2,
   FileText,
   HeartPulse,
@@ -30,7 +28,6 @@ import {
   Home,
   IdCard,
   Mail,
-  MapPin,
   RefreshCcw,
   Search,
   Trash2,
@@ -327,7 +324,10 @@ function AccountIdentityBar() {
             borderColor="brand.softGreen"
             color="brand.accentText"
             transition="background-color var(--motion-fast) var(--motion-ease-out), border-color var(--motion-fast) var(--motion-ease-out), transform var(--motion-fast) var(--motion-ease-out)"
-            _hover={{ bg: "brand.successBg", borderColor: "brand.primaryGreen" }}
+            _hover={{
+              bg: "brand.successBg",
+              borderColor: "brand.primaryGreen",
+            }}
             _active={{ transform: "translateY(1px)" }}
           >
             <FileText size={15} />
@@ -1082,7 +1082,9 @@ function SelectedPlan({ plan }: { plan: PlanRecord }) {
         alignItems={{ base: "stretch", lg: "center" }}
         gap={{ base: "3", lg: "4" }}
         p="4"
-        bg="linear-gradient(135deg, rgba(240,253,244,0.84), rgba(255,255,255,1))"
+        bg="brand.selectedSurface"
+        borderBottom="1px solid"
+        borderColor="brand.neutralBorder"
       >
         <HStack align="center" gap="3" minW="0">
           <Flex
@@ -1141,10 +1143,10 @@ function SelectedPlan({ plan }: { plan: PlanRecord }) {
             minW={{ base: "0", sm: "92px" }}
             size="sm"
             variant="outline"
-            borderColor="brand.destructiveRed"
-            color="brand.destructiveRed"
+            borderColor="brand.dangerText"
+            color="brand.dangerText"
             bg="brand.white"
-            _hover={{ bg: "brand.errorBg" }}
+            _hover={{ bg: "brand.dangerSurface" }}
             transition="background-color var(--motion-fast) var(--motion-ease-out), border-color var(--motion-fast) var(--motion-ease-out), transform var(--motion-fast) var(--motion-ease-out)"
             _active={{ transform: "translateY(1px)" }}
           >
@@ -1153,8 +1155,6 @@ function SelectedPlan({ plan }: { plan: PlanRecord }) {
           </Button>
         </HStack>
       </Grid>
-
-      <Separator borderColor="brand.neutralBorder" />
 
       <Box px="4" py="3" overflowX="auto">
         <HStack gap="2" minW={{ base: "760px", xl: "auto" }}>
@@ -1166,11 +1166,12 @@ function SelectedPlan({ plan }: { plan: PlanRecord }) {
                 key={tab.label}
                 size="xs"
                 variant={tab.active ? "solid" : "ghost"}
-                bg={tab.active ? "brand.primaryGreen" : "brand.subtleBg"}
+                bg={tab.active ? "brand.primaryGreen" : "brand.controlMutedBg"}
                 color={tab.active ? "text.inverse" : "text.secondary"}
                 borderRadius="full"
                 _hover={{
-                  bg: tab.active ? "brand.darkGreen" : "brand.mutedBg",
+                  bg: tab.active ? "brand.darkGreen" : "brand.successBg",
+                  color: tab.active ? "text.inverse" : "brand.accentText",
                 }}
                 transition="background-color var(--motion-fast) var(--motion-ease-out), color var(--motion-fast) var(--motion-ease-out), transform var(--motion-fast) var(--motion-ease-out)"
                 _active={{ transform: "scale(0.98)" }}
@@ -1186,41 +1187,27 @@ function SelectedPlan({ plan }: { plan: PlanRecord }) {
       <Separator borderColor="brand.neutralBorder" />
 
       <Box p="4">
-        <SimpleGrid columns={{ base: 1, sm: 2, lg: 3 }} gap="2.5">
-          <InfoTile label="Planholder" value={plan.insured} />
-          <InfoTile label="Account Status" value={plan.status} />
-          <InfoTile label="Insurance Status" value={plan.insuranceStatus} />
-          <InfoTile label="Plan" value={plan.plan} />
-          <InfoTile label="Mode" value="Annual" />
-          <InfoTile label="Term" value={plan.payingYears} />
-          <InfoTile label="Plan Class" value={plan.planClass} />
-          <InfoTile label="Account Class" value={plan.planClass} />
-          <InfoTile label="Plan Code" value="LISA10" />
-          <InfoTile label="Contract Price" value={plan.contractPrice} />
-          <InfoTile label="Installment Amount" value={plan.installmentAmount} />
-          <InfoTile label="Total Annual Payable" value={plan.contractPrice} />
-          <InfoTile
-            label="Effectivity Date"
-            value={plan.effectivityDate}
-            icon={<CalendarDays size={15} />}
-          />
-          <InfoTile
-            label="Maturity Date"
-            value={plan.maturityDate}
-            icon={<Clock3 size={15} />}
-          />
-          <InfoTile
-            label="Branch"
-            value={plan.branch}
-            icon={<MapPin size={15} />}
-          />
-          <InfoTile
-            label="Sales Agent"
-            value={plan.agent}
-            icon={<UserRound size={15} />}
-          />
-          <InfoTile label="Service Only" value={plan.serviceOnly} />
-        </SimpleGrid>
+        <PlanSummaryList
+          rows={[
+            ["Planholder", plan.insured],
+            ["Account Status", plan.status],
+            ["Insurance Status", plan.insuranceStatus],
+            ["Plan", plan.plan],
+            ["Mode", "Annual"],
+            ["Term", plan.payingYears],
+            ["Plan Class", plan.planClass],
+            ["Account Class", plan.planClass],
+            ["Plan Code", "LISA10"],
+            ["Contract Price", plan.contractPrice],
+            ["Installment Amount", plan.installmentAmount],
+            ["Total Annual Payable", plan.contractPrice],
+            ["Effectivity Date", plan.effectivityDate],
+            ["Maturity Date", plan.maturityDate],
+            ["Branch", plan.branch],
+            ["Sales Agent", plan.agent],
+            ["Service Only", plan.serviceOnly],
+          ]}
+        />
 
         <Box mt="4">
           <Text color="text.muted" fontSize="12px" fontWeight="600" mb="2">
@@ -1241,37 +1228,49 @@ function SelectedPlan({ plan }: { plan: PlanRecord }) {
   );
 }
 
-function InfoTile({
-  label,
-  value,
-  icon,
+function PlanSummaryList({
+  rows,
 }: {
-  label: string;
-  value: string;
-  icon?: React.ReactNode;
+  rows: [string, string][];
 }) {
   return (
     <Box
+      as="dl"
       bg="brand.subtleBg"
       border="1px solid"
       borderColor="brand.neutralBorder"
       borderRadius="md"
-      p="3"
-      transition="background-color var(--motion-fast) var(--motion-ease-out), border-color var(--motion-fast) var(--motion-ease-out)"
-      _hover={{
-        bg: "brand.white",
-        borderColor: "brand.softGreen",
-      }}
+      overflow="hidden"
     >
-      <HStack gap="2" color="text.muted">
-        {icon ? <Box color="brand.accentText">{icon}</Box> : null}
-        <Text fontSize="12px" fontWeight="600">
-          {label}
-        </Text>
-      </HStack>
-      <Text color="brand.neutralText" fontSize="14px" fontWeight="600" mt="1">
-        {value}
-      </Text>
+      {rows.map(([label, value], index) => (
+        <Grid
+          key={label}
+          templateColumns={{ base: "minmax(112px, 0.9fr) minmax(0, 1.1fr)", sm: "minmax(180px, 0.7fr) minmax(0, 1.3fr)" }}
+          gap="3"
+          alignItems="center"
+          minH="44px"
+          px="4"
+          py="2.5"
+          borderBottom={index === rows.length - 1 ? "0" : "1px solid"}
+          borderColor="brand.neutralBorder"
+          transition="background-color var(--motion-fast) var(--motion-ease-out)"
+          _hover={{ bg: "brand.white" }}
+        >
+          <Text as="dt" color="text.muted" fontSize="13px" fontWeight="600">
+            {label}
+          </Text>
+          <Text
+            as="dd"
+            color="brand.neutralText"
+            fontSize="14px"
+            fontWeight="600"
+            textAlign="right"
+            overflowWrap="anywhere"
+          >
+            {value}
+          </Text>
+        </Grid>
+      ))}
     </Box>
   );
 }
