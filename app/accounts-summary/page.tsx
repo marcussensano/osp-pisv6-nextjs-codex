@@ -36,6 +36,7 @@ import {
   WalletCards,
 } from "lucide-react";
 import { useMemo, useState } from "react";
+import type { ElementType } from "react";
 import { AppShell } from "../components/AppShell";
 import { DISPLAY_STATUS_STYLES } from "../theme/design-tokens";
 
@@ -63,6 +64,13 @@ type PlanRecord = {
   serviceOnly: string;
   agent: string;
   remarks: string;
+};
+
+type SummaryMetric = {
+  label: string;
+  value: string;
+  detail: string;
+  icon: ElementType;
 };
 
 const planholder = {
@@ -121,7 +129,7 @@ const plans: PlanRecord[] = [
 
 const initialSelectedPlan = plans[0];
 
-const accountStats = [
+const accountStats: SummaryMetric[] = [
   {
     label: "Total Plans",
     value: "2",
@@ -207,75 +215,89 @@ export default function AccountsSummaryPage() {
       title="Accounts Summary"
       eyebrow={`Home / Planholder / ${planholder.id}`}
     >
-      <VStack align="stretch" gap="4" w="100%" maxW="1440px" mx="auto">
-        <AccountIdentityBar selectedPlan={selectedPlan} />
+      <VStack
+        align="stretch"
+        gap={{ base: "4", lg: "5" }}
+        w="100%"
+        maxW="1440px"
+        mx="auto"
+      >
+        <AccountOverview selectedPlan={selectedPlan} />
 
-        <SimpleGrid columns={{ base: 1, sm: 2, xl: 4 }} gap="3">
-          {accountStats.map((stat) => (
-            <MetricCard key={stat.label} {...stat} />
-          ))}
-        </SimpleGrid>
+        <Grid
+          templateColumns={{
+            base: "1fr",
+            xl: "minmax(0, 0.92fr) minmax(540px, 1.08fr)",
+          }}
+          alignItems="start"
+          gap={{ base: "4", lg: "5" }}
+        >
+          <VStack align="stretch" gap={{ base: "4", lg: "5" }} minW="0">
+            <AccountDetailsPanel
+              activeTab={activeAccountTab}
+              onTabChange={setActiveAccountTab}
+            />
+            <PlanPortfolio
+              selectedPlan={selectedPlan}
+              onSelectPlan={setSelectedPlanNo}
+            />
+          </VStack>
 
-        <AccountDetailsCard
-          activeTab={activeAccountTab}
-          onTabChange={setActiveAccountTab}
-        />
-
-        <PlanWorkspace
-          selectedPlan={selectedPlan}
-          onSelectPlan={setSelectedPlanNo}
-        />
+          <SelectedPlan key={selectedPlan.lpaNo} plan={selectedPlan} />
+        </Grid>
       </VStack>
     </AppShell>
   );
 }
 
-function AccountIdentityBar({ selectedPlan }: { selectedPlan: PlanRecord }) {
+function AccountOverview({ selectedPlan }: { selectedPlan: PlanRecord }) {
   return (
-    <Box
-      border="1px solid"
-      borderColor="brand.neutralBorder"
-      borderRadius="lg"
-      bg="brand.white"
-      boxShadow="level1"
-      overflow="hidden"
-      transition="box-shadow var(--motion-fast) var(--motion-ease-out), border-color var(--motion-fast) var(--motion-ease-out)"
-      _hover={{
-        borderColor: "brand.softGreen",
-        boxShadow: "level2",
+    <Grid
+      templateColumns={{
+        base: "1fr",
+        lg: "minmax(360px, 0.78fr) minmax(0, 1.22fr)",
       }}
+      gap={{ base: "3", lg: "4" }}
+      alignItems="stretch"
     >
-      <Flex
-        align={{ base: "flex-start", md: "center" }}
-        justify="space-between"
-        direction={{ base: "column", md: "row" }}
-        gap="4"
-        px={{ base: "4", md: "5" }}
-        py="4"
+      <Box
+        bg="brand.white"
+        border="1px solid"
+        borderColor="brand.neutralBorder"
+        borderRadius="lg"
+        boxShadow="level1"
+        overflow="hidden"
       >
-        <HStack align="center" gap="3" minW="0">
+        <Flex
+          align={{ base: "flex-start", sm: "center" }}
+          direction={{ base: "column", sm: "row" }}
+          gap="4"
+          p={{ base: "4", md: "5" }}
+          minH="100%"
+        >
           <Flex
             align="center"
             justify="center"
-            w="48px"
-            h="48px"
+            w="56px"
+            h="56px"
             borderRadius="full"
-            bg="brand.primaryGreen"
-            color="text.inverse"
-            fontWeight="700"
-            boxShadow="level1"
+            bg="brand.successBg"
+            color="brand.accentText"
+            border="1px solid"
+            borderColor="brand.softGreen"
             flexShrink="0"
           >
-            {planholder.initials}
+            <UserRound size={26} />
           </Flex>
-          <Box minW="0">
-            <HStack gap="2" wrap="wrap" mb="1">
+
+          <Box flex="1" minW="0">
+            <HStack gap="2" wrap="wrap" mb="1.5">
               <Badge
                 bg="brand.successBg"
                 color="brand.accentText"
                 borderColor="brand.primaryGreen"
                 borderWidth="1px"
-                borderRadius="full"
+                borderRadius="sm"
                 px="2.5"
               >
                 {planholder.status}
@@ -285,138 +307,158 @@ function AccountIdentityBar({ selectedPlan }: { selectedPlan: PlanRecord }) {
                 color="brand.neutralText"
                 borderColor="brand.neutralBorder"
                 borderWidth="1px"
-                borderRadius="full"
+                borderRadius="sm"
                 px="2.5"
               >
                 {planholder.id}
               </Badge>
             </HStack>
+
             <Text
               as="h2"
               color="brand.neutralText"
-              fontSize={{ base: "22px", md: "24px" }}
-              lineHeight="1.1"
+              fontSize={{ base: "24px", md: "26px" }}
               fontWeight="700"
+              lineHeight="1.12"
             >
               {planholder.name}
             </Text>
             <Text color="text.secondary" fontSize="14px" mt="1">
-              Planholder account, contact, employment, requests, and plan
-              records.
+              Planholder account, requests, and plan records.
             </Text>
+
+            <HStack gap="2" wrap="wrap" mt="4" w={{ base: "100%", sm: "auto" }}>
+              <Button
+                flex={{ base: "1", sm: "unset" }}
+                minW={{ base: "0", sm: "124px" }}
+                size="sm"
+                bg="brand.primaryGreen"
+                color="text.inverse"
+                _hover={{ bg: "brand.darkGreen" }}
+                _active={{ transform: "translateY(1px)" }}
+                _focusVisible={{
+                  outline: "2px solid",
+                  outlineColor: "brand.primaryGreen",
+                  outlineOffset: "2px",
+                }}
+                transition="background-color var(--motion-fast) var(--motion-ease-out), transform var(--motion-fast) var(--motion-ease-out)"
+                onClick={() =>
+                  document
+                    .getElementById("selected-plan-panel")
+                    ?.scrollIntoView({ behavior: "smooth", block: "start" })
+                }
+              >
+                <RefreshCcw size={15} />
+                Review{" "}
+                {selectedPlan.status === "Lapsed" ? "Lapsed" : "Selected"} Plan
+              </Button>
+              <Button
+                flex={{ base: "1", sm: "unset" }}
+                minW={{ base: "0", sm: "112px" }}
+                size="sm"
+                variant="outline"
+                borderColor="brand.softGreen"
+                color="brand.accentText"
+                bg="brand.white"
+                _hover={{
+                  bg: "brand.successBg",
+                  borderColor: "brand.primaryGreen",
+                }}
+                _active={{ transform: "translateY(1px)" }}
+                _focusVisible={{
+                  outline: "2px solid",
+                  outlineColor: "brand.primaryGreen",
+                  outlineOffset: "2px",
+                }}
+                transition="background-color var(--motion-fast) var(--motion-ease-out), border-color var(--motion-fast) var(--motion-ease-out), transform var(--motion-fast) var(--motion-ease-out)"
+                onClick={() => window.print()}
+              >
+                <FileText size={15} />
+                Export Summary
+              </Button>
+            </HStack>
           </Box>
-        </HStack>
-
-        <HStack
-          gap="2"
-          wrap="wrap"
-          w={{ base: "100%", md: "auto" }}
-          justify={{ base: "stretch", md: "flex-end" }}
-        >
-          <Button
-            flex={{ base: "1", sm: "unset" }}
-            minW={{ base: "0", sm: "92px" }}
-            size="sm"
-            bg="brand.primaryGreen"
-            color="text.inverse"
-            _hover={{ bg: "brand.darkGreen" }}
-            transition="background-color var(--motion-fast) var(--motion-ease-out), transform var(--motion-fast) var(--motion-ease-out)"
-            _active={{ transform: "translateY(1px)" }}
-            onClick={() =>
-              document
-                .getElementById("selected-plan-panel")
-                ?.scrollIntoView({ behavior: "smooth", block: "start" })
-            }
-          >
-            <RefreshCcw size={15} />
-            Review {selectedPlan.status === "Lapsed" ? "Lapsed" : "Selected"} Plan
-          </Button>
-          <Button
-            flex={{ base: "1", sm: "unset" }}
-            minW={{ base: "0", sm: "92px" }}
-            size="sm"
-            variant="outline"
-            borderColor="brand.softGreen"
-            color="brand.accentText"
-            transition="background-color var(--motion-fast) var(--motion-ease-out), border-color var(--motion-fast) var(--motion-ease-out), transform var(--motion-fast) var(--motion-ease-out)"
-            _hover={{
-              bg: "brand.successBg",
-              borderColor: "brand.primaryGreen",
-            }}
-            _active={{ transform: "translateY(1px)" }}
-            onClick={() => window.print()}
-          >
-            <FileText size={15} />
-            Export Summary
-          </Button>
-        </HStack>
-      </Flex>
-    </Box>
-  );
-}
-
-function MetricCard({
-  label,
-  value,
-  detail,
-  icon: Icon,
-}: {
-  label: string;
-  value: string;
-  detail: string;
-  icon: React.ElementType;
-}) {
-  return (
-    <Box
-      bg="brand.white"
-      border="1px solid"
-      borderColor="brand.neutralBorder"
-      borderRadius="lg"
-      p={{ base: "3", md: "3.5" }}
-      boxShadow="level1"
-      transition="transform var(--motion-fast) var(--motion-ease-out), box-shadow var(--motion-fast) var(--motion-ease-out), border-color var(--motion-fast) var(--motion-ease-out)"
-      _hover={{
-        transform: "translateY(-2px)",
-        borderColor: "brand.softGreen",
-        boxShadow: "level2",
-      }}
-    >
-      <Flex align="flex-start" justify="space-between" gap="3">
-        <Box minW="0">
-          <Text color="text.secondary" fontSize="12px" fontWeight="600">
-            {label}
-          </Text>
-          <Text
-            color="brand.neutralText"
-            fontSize={{ base: "22px", md: "24px" }}
-            fontWeight="700"
-            lineHeight="1.05"
-            mt="1"
-          >
-            {value}
-          </Text>
-        </Box>
-        <Flex
-          align="center"
-          justify="center"
-          w="34px"
-          h="34px"
-          borderRadius="md"
-          bg="brand.successBg"
-          color="brand.accentText"
-          flexShrink="0"
-        >
-          <Icon size={17} />
         </Flex>
-      </Flex>
-      <Text color="text.muted" fontSize="12px" mt="2">
-        {detail}
-      </Text>
-    </Box>
+      </Box>
+
+      <SimpleGrid
+        columns={{ base: 1, md: 2 }}
+        gap="0"
+        bg="brand.white"
+        border="1px solid"
+        borderColor="brand.neutralBorder"
+        borderRadius="lg"
+        overflow="hidden"
+        boxShadow="level1"
+      >
+        {accountStats.map((stat, index) => (
+          <MetricTile key={stat.label} stat={stat} index={index} />
+        ))}
+      </SimpleGrid>
+    </Grid>
   );
 }
 
-function AccountDetailsCard({
+function MetricTile({ stat, index }: { stat: SummaryMetric; index: number }) {
+  const Icon = stat.icon;
+
+  return (
+    <Flex
+      align="center"
+      gap="4"
+      px={{ base: "4", md: "5" }}
+      py={{ base: "4", md: "5" }}
+      minH="108px"
+      bg={{
+        base: index % 2 === 0 ? "brand.subtleBg" : "brand.white",
+        md: index === 0 || index === 3 ? "brand.white" : "brand.subtleBg",
+      }}
+      borderColor="brand.neutralBorder"
+    >
+      <Flex
+        align="center"
+        justify="center"
+        w="44px"
+        h="44px"
+        borderRadius="full"
+        bg="brand.successBg"
+        color="brand.accentText"
+        border="1px solid"
+        borderColor="brand.softGreen"
+        flexShrink="0"
+      >
+        <Icon size={19} />
+      </Flex>
+
+      <Box minW="0" flex="1">
+        <Text
+          color="text.muted"
+          fontSize="13px"
+          fontWeight="700"
+          lineHeight="1.25"
+        >
+          {stat.label}
+        </Text>
+
+        <Text
+          color="brand.neutralText"
+          fontSize={{ base: "24px", md: "26px" }}
+          fontWeight="800"
+          lineHeight="1.1"
+          mt="1"
+          whiteSpace="nowrap"
+        >
+          {stat.value}
+        </Text>
+
+        <Text color="text.secondary" fontSize="13px" lineHeight="1.45" mt="1">
+          {stat.detail}
+        </Text>
+      </Box>
+    </Flex>
+  );
+}
+function AccountDetailsPanel({
   activeTab,
   onTabChange,
 }: {
@@ -424,104 +466,50 @@ function AccountDetailsCard({
   onTabChange: (tab: AccountDetailTab) => void;
 }) {
   return (
-    <Box
-      bg="brand.white"
-      border="1px solid"
-      borderColor="brand.neutralBorder"
-      borderRadius="lg"
-      boxShadow="level1"
-      overflow="hidden"
-      transition="box-shadow var(--motion-fast) var(--motion-ease-out), border-color var(--motion-fast) var(--motion-ease-out)"
-      _hover={{ borderColor: "brand.softGreen", boxShadow: "level2" }}
-    >
-      <Flex
-        align={{ base: "flex-start", lg: "center" }}
-        justify="space-between"
-        direction={{ base: "column", lg: "row" }}
-        gap="3"
-        px={{ base: "4", md: "5" }}
-        py="4"
-        borderBottom="1px solid"
-        borderColor="brand.neutralBorder"
-      >
-        <HStack gap="3">
-          <Flex
-            align="center"
-            justify="center"
-            w="34px"
-            h="34px"
-            borderRadius="md"
-            bg="brand.successBg"
-            color="brand.accentText"
-          >
-            <UserRound size={18} />
-          </Flex>
-          <Box>
-            <Text
-              as="h3"
-              color="brand.neutralText"
-              fontSize="16px"
-              fontWeight="700"
+    <SectionPanel
+      icon={UserRound}
+      title="Account Details"
+      description="Consolidated planholder information"
+      action={
+        <ScrollableTabs label="Account detail sections">
+          {accountDetailTabs.map((tab) => (
+            <Button
+              key={tab}
+              role="tab"
+              aria-selected={activeTab === tab}
+              size="xs"
+              borderRadius="sm"
+              bg={activeTab === tab ? "brand.primaryGreen" : "transparent"}
+              color={activeTab === tab ? "text.inverse" : "text.secondary"}
+              _hover={{
+                bg: activeTab === tab ? "brand.darkGreen" : "brand.mutedBg",
+              }}
+              _active={{ transform: "translateY(1px)" }}
+              _focusVisible={{
+                outline: "2px solid",
+                outlineColor: "brand.primaryGreen",
+                outlineOffset: "2px",
+              }}
+              transition="background-color var(--motion-fast) var(--motion-ease-out), color var(--motion-fast) var(--motion-ease-out), transform var(--motion-fast) var(--motion-ease-out)"
+              onClick={() => onTabChange(tab)}
             >
-              Account Details
-            </Text>
-            <Text color="text.muted" fontSize="12px">
-              Consolidated planholder information
-            </Text>
-          </Box>
-        </HStack>
-
-        <Box w={{ base: "100%", lg: "auto" }} overflowX="auto">
-          <HStack
-            as="div"
-            role="tablist"
-            gap="1"
-            minW="max-content"
-            bg="brand.subtleBg"
-            border="1px solid"
-            borderColor="brand.neutralBorder"
-            borderRadius="full"
-            p="1"
-          >
-            {accountDetailTabs.map((tab) => (
-              <Button
-                key={tab}
-                role="tab"
-                aria-selected={activeTab === tab}
-                size="xs"
-                borderRadius="full"
-                bg={activeTab === tab ? "brand.primaryGreen" : "transparent"}
-                color={activeTab === tab ? "text.inverse" : "text.secondary"}
-                _hover={{
-                  bg: activeTab === tab ? "brand.darkGreen" : "brand.mutedBg",
-                }}
-                transition="background-color var(--motion-fast) var(--motion-ease-out), color var(--motion-fast) var(--motion-ease-out), transform var(--motion-fast) var(--motion-ease-out)"
-                _active={{ transform: "scale(0.98)" }}
-                _focusVisible={{
-                  outline: "2px solid",
-                  outlineColor: "brand.primaryGreen",
-                  outlineOffset: "2px",
-                }}
-                onClick={() => onTabChange(tab)}
-              >
-                {tab}
-              </Button>
-            ))}
-          </HStack>
-        </Box>
-      </Flex>
-
-      <Box p={{ base: "4", md: "5" }} role="tabpanel">
+              {tab}
+            </Button>
+          ))}
+        </ScrollableTabs>
+      }
+    >
+      <Box role="tabpanel">
         <AccountDetailPanel activeTab={activeTab} />
       </Box>
-    </Box>
+    </SectionPanel>
   );
 }
 
 function AccountDetailPanel({ activeTab }: { activeTab: AccountDetailTab }) {
   if (activeTab === "Profile") {
     return (
-      <DetailTable rows={profileRows} columns={{ base: 1, md: 2, xl: 3 }} />
+      <DetailTable rows={profileRows} columns={{ base: 1, md: 2, "2xl": 3 }} />
     );
   }
 
@@ -539,7 +527,7 @@ function AccountDetailPanel({ activeTab }: { activeTab: AccountDetailTab }) {
     return (
       <DetailTable
         rows={employmentRows}
-        columns={{ base: 1, md: 2, xl: 4 }}
+        columns={{ base: 1, md: 2, "2xl": 4 }}
         icon={<BriefcaseBusiness size={15} />}
       />
     );
@@ -586,8 +574,9 @@ function DetailTable({
       gap="0"
       border="1px solid"
       borderColor="brand.neutralBorder"
-      borderRadius="lg"
+      borderRadius="md"
       overflow="hidden"
+      bg="brand.white"
     >
       {rows.map(([label, value], index) => (
         <Box
@@ -642,12 +631,12 @@ function AddressPanel({
     <Flex
       align="flex-start"
       gap="3"
-      minH="104px"
+      minH="112px"
       p="4"
       border="1px solid"
       borderColor={empty ? "brand.neutralBorder" : "brand.softGreen"}
       borderStyle={empty ? "dashed" : "solid"}
-      borderRadius="lg"
+      borderRadius="md"
       bg={empty ? "brand.subtleBg" : "brand.successBg"}
       color={empty ? "text.muted" : "brand.neutralText"}
       transition="background-color var(--motion-fast) var(--motion-ease-out), border-color var(--motion-fast) var(--motion-ease-out)"
@@ -669,13 +658,13 @@ function AddressPanel({
       </Flex>
       <Box minW="0">
         <HStack gap="2" wrap="wrap">
-          <Text color="brand.accentText" fontSize="14px" fontWeight="600">
+          <Text color="brand.accentText" fontSize="14px" fontWeight="700">
             {title}
           </Text>
           <Badge
             bg="brand.white"
             color={empty ? "text.muted" : "brand.accentText"}
-            borderRadius="full"
+            borderRadius="sm"
             px="2"
           >
             {tag}
@@ -703,10 +692,10 @@ function EmptyState() {
       align="center"
       justify="center"
       direction="column"
-      minH="128px"
+      minH="140px"
       textAlign="center"
       bg="brand.subtleBg"
-      borderRadius="lg"
+      borderRadius="md"
       border="1px dashed"
       borderColor="brand.neutralBorder"
       p="5"
@@ -715,8 +704,8 @@ function EmptyState() {
       <Flex
         align="center"
         justify="center"
-        w="38px"
-        h="38px"
+        w="40px"
+        h="40px"
         borderRadius="full"
         bg="brand.successBg"
         color="brand.accentText"
@@ -724,7 +713,7 @@ function EmptyState() {
       >
         <BadgeCheck size={20} />
       </Flex>
-      <Text color="brand.neutralText" fontSize="14px" fontWeight="600">
+      <Text color="brand.neutralText" fontSize="14px" fontWeight="700">
         No pending requests
       </Text>
       <Text color="text.muted" fontSize="14px" maxW="280px" mt="1">
@@ -734,7 +723,7 @@ function EmptyState() {
   );
 }
 
-function PlanWorkspace({
+function PlanPortfolio({
   selectedPlan,
   onSelectPlan,
 }: {
@@ -763,151 +752,88 @@ function PlanWorkspace({
   );
 
   return (
-    <Box
-      bg="brand.white"
-      border="1px solid"
-      borderColor="brand.neutralBorder"
-      borderRadius="lg"
-      boxShadow="level1"
-      overflow="hidden"
-      transition="box-shadow var(--motion-fast) var(--motion-ease-out), border-color var(--motion-fast) var(--motion-ease-out)"
-      _hover={{ borderColor: "brand.softGreen", boxShadow: "level2" }}
-    >
-      <Flex
-        align="center"
-        justify="space-between"
-        gap="3"
-        px={{ base: "4", md: "5" }}
-        py="4"
-        borderBottom="1px solid"
-        borderColor="brand.neutralBorder"
-      >
-        <HStack gap="3">
-          <Flex
-            align="center"
-            justify="center"
-            w="34px"
-            h="34px"
-            borderRadius="md"
-            bg="brand.successBg"
-            color="brand.accentText"
-          >
-            <WalletCards size={18} />
-          </Flex>
-          <Text
-            as="h3"
-            color="brand.neutralText"
-            fontSize="16px"
-            fontWeight="700"
-          >
-            Plan Portfolio
-          </Text>
-        </HStack>
+    <SectionPanel
+      icon={WalletCards}
+      title="Plan Portfolio"
+      description="Compare records and select a plan to review"
+      action={
         <Badge
           bg="brand.successBg"
           color="brand.accentText"
-          borderRadius="full"
+          borderColor="brand.softGreen"
+          borderWidth="1px"
+          borderRadius="sm"
           px="3"
           py="1"
         >
           {plans.length} records
         </Badge>
+      }
+    >
+      <Flex
+        align={{ base: "stretch", md: "center" }}
+        justify="space-between"
+        direction={{ base: "column", md: "row" }}
+        gap="3"
+        mb="3"
+      >
+        <Box>
+          <Text color="brand.neutralText" fontSize="14px" fontWeight="700">
+            Plans
+          </Text>
+          <Text color="text.muted" fontSize="12px">
+            Search by LPA number, name, plan, branch, or agent.
+          </Text>
+        </Box>
+        <PlanSearchInput
+          width={{ base: "100%", md: "290px" }}
+          value={searchQuery}
+          onChange={setSearchQuery}
+        />
       </Flex>
 
-      <Box p={{ base: "4", md: "5" }}>
-        <Grid
-          templateColumns={{
-            base: "1fr",
-            xl: "minmax(520px, 0.95fr) minmax(0, 1.4fr)",
-          }}
-          gap="4"
-          alignItems="start"
-        >
-          <Box>
-            <Flex
-              align={{ base: "stretch", md: "center" }}
-              justify="space-between"
-              direction={{ base: "column", md: "row" }}
-              gap="3"
-              mb="3"
-            >
-              <Box>
-                <Text
-                  color="brand.neutralText"
-                  fontSize="14px"
-                  fontWeight="700"
-                >
-                  Plans
-                </Text>
-                <Text color="text.muted" fontSize="12px">
-                  Compare records and select a plan to review.
-                </Text>
-              </Box>
-              <PlanSearchInput
-                display={{ base: "none", md: "block" }}
-                width="260px"
-                value={searchQuery}
-                onChange={setSearchQuery}
-              />
-            </Flex>
-
-            <Box display={{ base: "block", md: "none" }} mb="3">
-              <PlanSearchInput value={searchQuery} onChange={setSearchQuery} />
-            </Box>
-
-            <Box display={{ base: "none", md: "block" }}>
-              <PlanListTable
-                plans={visiblePlans}
-                selectedPlanNo={selectedPlan.lpaNo}
-                searchQuery={searchQuery}
-                onSelectPlan={onSelectPlan}
-                onClearSearch={() => setSearchQuery("")}
-              />
-            </Box>
-
-            <VStack
-              display={{ base: "flex", md: "none" }}
-              align="stretch"
-              gap="2"
-            >
-              {visiblePlans.length > 0 ? (
-                visiblePlans.map((plan) => (
-                  <PlanListItem
-                    key={plan.lpaNo}
-                    plan={plan}
-                    active={plan.lpaNo === selectedPlan.lpaNo}
-                    onSelect={() => onSelectPlan(plan.lpaNo)}
-                  />
-                ))
-              ) : (
-                <PlanSearchEmptyState
-                  searchQuery={searchQuery}
-                  onClearSearch={() => setSearchQuery("")}
-                />
-              )}
-            </VStack>
-          </Box>
-
-          <SelectedPlan key={selectedPlan.lpaNo} plan={selectedPlan} />
-        </Grid>
+      <Box display={{ base: "none", md: "block" }}>
+        <PlanListTable
+          plans={visiblePlans}
+          selectedPlanNo={selectedPlan.lpaNo}
+          searchQuery={searchQuery}
+          onSelectPlan={onSelectPlan}
+          onClearSearch={() => setSearchQuery("")}
+        />
       </Box>
-    </Box>
+
+      <VStack display={{ base: "flex", md: "none" }} align="stretch" gap="2">
+        {visiblePlans.length > 0 ? (
+          visiblePlans.map((plan) => (
+            <PlanListItem
+              key={plan.lpaNo}
+              plan={plan}
+              active={plan.lpaNo === selectedPlan.lpaNo}
+              onSelect={() => onSelectPlan(plan.lpaNo)}
+            />
+          ))
+        ) : (
+          <PlanSearchEmptyState
+            searchQuery={searchQuery}
+            onClearSearch={() => setSearchQuery("")}
+          />
+        )}
+      </VStack>
+    </SectionPanel>
   );
 }
 
 function PlanSearchInput({
-  display,
   width = "100%",
   value,
   onChange,
 }: {
-  display?: Record<string, string> | string;
   width?: Record<string, string> | string;
   value: string;
   onChange: (value: string) => void;
 }) {
   return (
-    <Box position="relative" display={display} w={width}>
+    <Box position="relative" w={width}>
       <Box
         position="absolute"
         left="3"
@@ -957,11 +883,11 @@ function PlanListTable({
     <Box
       border="1px solid"
       borderColor="brand.neutralBorder"
-      borderRadius="lg"
+      borderRadius="md"
       overflow="hidden"
     >
       <Grid
-        templateColumns="1.15fr 0.95fr 0.7fr 0.9fr 0.85fr"
+        templateColumns="1.1fr 0.95fr 0.7fr 0.95fr 0.85fr"
         gap="0"
         bg="brand.subtleBg"
         borderBottom="1px solid"
@@ -972,7 +898,7 @@ function PlanListTable({
             key={header}
             color="text.muted"
             fontSize="12px"
-            fontWeight="600"
+            fontWeight="700"
             px="3"
             py="2.5"
           >
@@ -991,14 +917,25 @@ function PlanListTable({
               as="button"
               aria-pressed={active}
               aria-label={`Review plan ${plan.lpaNo}`}
-              templateColumns="1.15fr 0.95fr 0.7fr 0.9fr 0.85fr"
+              templateColumns="1.1fr 0.95fr 0.7fr 0.95fr 0.85fr"
               gap="0"
               w="100%"
+              position="relative"
               textAlign="left"
               bg={active ? "brand.successBg" : "brand.white"}
               borderBottom="1px solid"
               borderColor="brand.neutralBorder"
               cursor="pointer"
+              _before={{
+                content: '""',
+                position: "absolute",
+                left: "0",
+                top: "0",
+                bottom: "0",
+                width: active ? "4px" : "0",
+                bg: "brand.primaryGreen",
+                transition: "width var(--motion-fast) var(--motion-ease-out)",
+              }}
               _last={{ borderBottom: "0" }}
               transition="background-color var(--motion-fast) var(--motion-ease-out), transform var(--motion-fast) var(--motion-ease-out)"
               _hover={{ bg: "brand.successBg", transform: "translateX(2px)" }}
@@ -1010,8 +947,12 @@ function PlanListTable({
               }}
               onClick={() => onSelectPlan(plan.lpaNo)}
             >
-              <Box px="3" py="3">
-                <Text color="brand.neutralText" fontSize="14px" fontWeight="600">
+              <Box px="3" py="3" pl={active ? "4" : "3"}>
+                <Text
+                  color="brand.neutralText"
+                  fontSize="14px"
+                  fontWeight="700"
+                >
                   {plan.lpaNo}
                 </Text>
                 <Text color="text.muted" fontSize="12px">
@@ -1019,7 +960,11 @@ function PlanListTable({
                 </Text>
               </Box>
               <Box px="3" py="3">
-                <Text color="brand.neutralText" fontSize="14px" fontWeight="600">
+                <Text
+                  color="brand.neutralText"
+                  fontSize="14px"
+                  fontWeight="600"
+                >
                   {plan.plan}
                 </Text>
                 <Text color="text.muted" fontSize="12px">
@@ -1030,12 +975,12 @@ function PlanListTable({
                 <PlanBadge status={plan.status} />
               </Flex>
               <Flex align="center" px="3" py="3">
-                <Text color="brand.accentText" fontSize="12px" fontWeight="600">
+                <Text color="brand.accentText" fontSize="12px" fontWeight="700">
                   {plan.insuranceStatus}
                 </Text>
               </Flex>
               <Flex align="center" px="3" py="3">
-                <Text color="text.secondary" fontSize="12px" fontWeight="500">
+                <Text color="text.secondary" fontSize="12px" fontWeight="600">
                   {plan.branch}
                 </Text>
               </Flex>
@@ -1132,7 +1077,7 @@ function PlanListItem({
       p="0"
       border="1px solid"
       borderColor={active ? "brand.primaryGreen" : "brand.neutralBorder"}
-      borderRadius="lg"
+      borderRadius="md"
       bg={active ? "brand.successBg" : "brand.white"}
       overflow="hidden"
       whiteSpace="normal"
@@ -1177,7 +1122,7 @@ function PlanListItem({
                 <Text
                   color="brand.neutralText"
                   fontSize="14px"
-                  fontWeight="600"
+                  fontWeight="700"
                 >
                   {plan.lpaNo}
                 </Text>
@@ -1194,7 +1139,7 @@ function PlanListItem({
               color="brand.accentText"
               borderColor="brand.neutralBorder"
               borderWidth="1px"
-              borderRadius="full"
+              borderRadius="sm"
             >
               {plan.insuranceStatus}
             </Badge>
@@ -1203,7 +1148,7 @@ function PlanListItem({
               color="text.secondary"
               borderColor="brand.neutralBorder"
               borderWidth="1px"
-              borderRadius="full"
+              borderRadius="sm"
             >
               {plan.branch}
             </Badge>
@@ -1227,127 +1172,136 @@ function SelectedPlan({ plan }: { plan: PlanRecord }) {
       borderRadius="lg"
       overflow="hidden"
       bg="brand.white"
-      transition="box-shadow var(--motion-fast) var(--motion-ease-out), border-color var(--motion-fast) var(--motion-ease-out)"
-      _hover={{ borderColor: "brand.softGreen", boxShadow: "level1" }}
+      boxShadow="level1"
+      minW="0"
     >
-      <Grid
-        templateColumns={{
-          base: "1fr",
-          lg: "minmax(220px, 0.85fr) minmax(260px, 1fr) auto",
-        }}
-        alignItems={{ base: "stretch", lg: "center" }}
-        gap={{ base: "3", lg: "4" }}
-        p="4"
+      <Box
+        p={{ base: "4", md: "5" }}
         bg="brand.selectedSurface"
         borderBottom="1px solid"
         borderColor="brand.neutralBorder"
       >
-        <HStack align="center" gap="3" minW="0">
-          <Flex
-            align="center"
-            justify="center"
-            w="40px"
-            h="40px"
-            borderRadius="md"
-            bg="brand.primaryGreen"
-            color="text.inverse"
-            flexShrink="0"
-          >
-            <FileText size={19} />
-          </Flex>
-          <Box minW="0">
-            <Text
-              color="text.muted"
-              fontSize="12px"
-              fontWeight="600"
-              textTransform="uppercase"
-            >
-              Selected Plan
-            </Text>
-            <Text
-              color="brand.neutralText"
-              fontSize={{ base: "20px", md: "22px" }}
-              fontWeight="700"
-              lineHeight="1.1"
-              truncate
-            >
-              {plan.lpaNo}
-            </Text>
-          </Box>
-        </HStack>
-
-        <HStack
-          gap="2"
-          w={{ base: "100%", lg: "auto" }}
-          justify={{ base: "stretch", lg: "flex-end" }}
+        <Grid
+          templateColumns={{ base: "1fr", md: "minmax(0, 1fr) auto" }}
+          alignItems={{ base: "stretch", md: "center" }}
+          gap="4"
         >
-          <Button
-            flex={{ base: "1", sm: "unset" }}
-            minW={{ base: "0", sm: "112px" }}
-            size="sm"
-            bg="brand.primaryGreen"
-            color="text.inverse"
-            _hover={{ bg: "brand.darkGreen" }}
-            transition="background-color var(--motion-fast) var(--motion-ease-out), transform var(--motion-fast) var(--motion-ease-out)"
-            _active={{ transform: "translateY(1px)" }}
-            onClick={() =>
-              setActionNotice(
-                `Reinstatement review started for ${plan.lpaNo}. Confirm eligibility before saving changes.`,
-              )
-            }
+          <HStack align="center" gap="3" minW="0">
+            <Flex
+              align="center"
+              justify="center"
+              w="42px"
+              h="42px"
+              borderRadius="md"
+              bg="brand.primaryGreen"
+              color="text.inverse"
+              flexShrink="0"
+            >
+              <FileText size={20} />
+            </Flex>
+            <Box minW="0">
+              <HStack gap="2" wrap="wrap" mb="1">
+                <Text
+                  color="brand.accentText"
+                  fontSize="12px"
+                  fontWeight="700"
+                  textTransform="uppercase"
+                >
+                  Selected Plan
+                </Text>
+                <PlanBadge status={plan.status} />
+              </HStack>
+              <Text
+                color="brand.neutralText"
+                fontSize={{ base: "24px", md: "26px" }}
+                fontWeight="700"
+                lineHeight="1.1"
+                truncate
+              >
+                {plan.lpaNo}
+              </Text>
+              <Text color="text.secondary" fontSize="13px" mt="1">
+                {plan.plan} / {plan.planClass} / {plan.branch}
+              </Text>
+            </Box>
+          </HStack>
+
+          <HStack
+            gap="2"
+            w={{ base: "100%", md: "auto" }}
+            justify={{ base: "stretch", md: "flex-end" }}
           >
-            <RefreshCcw size={15} />
-            Reinstate
-          </Button>
-          <Button
-            flex={{ base: "1", sm: "unset" }}
-            minW={{ base: "0", sm: "92px" }}
-            size="sm"
-            variant="outline"
-            borderColor="brand.dangerText"
-            color="brand.dangerText"
-            bg="brand.white"
-            _hover={{ bg: "brand.dangerSurface" }}
-            transition="background-color var(--motion-fast) var(--motion-ease-out), border-color var(--motion-fast) var(--motion-ease-out), transform var(--motion-fast) var(--motion-ease-out)"
-            _active={{ transform: "translateY(1px)" }}
-            onClick={() => {
-              if (window.confirm(`Delete plan ${plan.lpaNo}? This action needs approval.`)) {
+            <Button
+              flex={{ base: "1", sm: "unset" }}
+              minW={{ base: "0", sm: "112px" }}
+              size="sm"
+              bg="brand.primaryGreen"
+              color="text.inverse"
+              _hover={{ bg: "brand.darkGreen" }}
+              transition="background-color var(--motion-fast) var(--motion-ease-out), transform var(--motion-fast) var(--motion-ease-out)"
+              _active={{ transform: "translateY(1px)" }}
+              onClick={() =>
                 setActionNotice(
-                  `Delete request prepared for ${plan.lpaNo}. Approval is required before the record is removed.`,
-                );
+                  `Reinstatement review started for ${plan.lpaNo}. Confirm eligibility before saving changes.`,
+                )
               }
-            }}
+            >
+              <RefreshCcw size={15} />
+              Reinstate
+            </Button>
+            <Button
+              flex={{ base: "1", sm: "unset" }}
+              minW={{ base: "0", sm: "92px" }}
+              size="sm"
+              variant="outline"
+              borderColor="brand.dangerText"
+              color="brand.dangerText"
+              bg="brand.white"
+              _hover={{ bg: "brand.dangerSurface" }}
+              transition="background-color var(--motion-fast) var(--motion-ease-out), border-color var(--motion-fast) var(--motion-ease-out), transform var(--motion-fast) var(--motion-ease-out)"
+              _active={{ transform: "translateY(1px)" }}
+              onClick={() => {
+                if (
+                  window.confirm(
+                    `Delete plan ${plan.lpaNo}? This action needs approval.`,
+                  )
+                ) {
+                  setActionNotice(
+                    `Delete request prepared for ${plan.lpaNo}. Approval is required before the record is removed.`,
+                  );
+                }
+              }}
+            >
+              <Trash2 size={15} />
+              Delete
+            </Button>
+          </HStack>
+        </Grid>
+
+        {actionNotice ? (
+          <Box
+            mt="4"
+            p="3"
+            bg="brand.white"
+            border="1px solid"
+            borderColor="brand.softGreen"
+            borderRadius="md"
+            color="brand.accentText"
+            fontSize="13px"
+            fontWeight="700"
+            role="status"
           >
-            <Trash2 size={15} />
-            Delete
-          </Button>
-        </HStack>
-      </Grid>
+            {actionNotice}
+          </Box>
+        ) : null}
+      </Box>
 
-      {actionNotice ? (
-        <Box
-          mx="4"
-          mt="4"
-          p="3"
-          bg="brand.successBg"
-          border="1px solid"
-          borderColor="brand.softGreen"
-          borderRadius="md"
-          color="brand.accentText"
-          fontSize="13px"
-          fontWeight="600"
-          role="status"
-        >
-          {actionNotice}
-        </Box>
-      ) : null}
-
-      <Box px="4" py="3" overflowX="auto">
+      <Box px={{ base: "4", md: "5" }} py="3" overflowX="auto">
         <HStack
           role="tablist"
           aria-label="Plan record sections"
           gap="2"
-          minW={{ base: "760px", xl: "auto" }}
+          minW={{ base: "760px", "2xl": "auto" }}
         >
           {planTabs.map((tab) => {
             const Icon = tab.icon;
@@ -1362,13 +1316,13 @@ function SelectedPlan({ plan }: { plan: PlanRecord }) {
                 variant={active ? "solid" : "ghost"}
                 bg={active ? "brand.primaryGreen" : "brand.controlMutedBg"}
                 color={active ? "text.inverse" : "text.secondary"}
-                borderRadius="full"
+                borderRadius="sm"
                 _hover={{
                   bg: active ? "brand.darkGreen" : "brand.successBg",
                   color: active ? "text.inverse" : "brand.accentText",
                 }}
                 transition="background-color var(--motion-fast) var(--motion-ease-out), color var(--motion-fast) var(--motion-ease-out), transform var(--motion-fast) var(--motion-ease-out)"
-                _active={{ transform: "scale(0.98)" }}
+                _active={{ transform: "translateY(1px)" }}
                 _focusVisible={{
                   outline: "2px solid",
                   outlineColor: "brand.primaryGreen",
@@ -1386,7 +1340,7 @@ function SelectedPlan({ plan }: { plan: PlanRecord }) {
 
       <Separator borderColor="brand.neutralBorder" />
 
-      <Box p="4" role="tabpanel">
+      <Box p={{ base: "4", md: "5" }} role="tabpanel">
         {activePlanTab === "Plan Details" ? (
           <>
             <PlanSummaryList
@@ -1412,7 +1366,7 @@ function SelectedPlan({ plan }: { plan: PlanRecord }) {
             />
 
             <Box mt="4">
-              <Text color="text.muted" fontSize="12px" fontWeight="600" mb="2">
+              <Text color="text.muted" fontSize="12px" fontWeight="700" mb="2">
                 Remarks
               </Text>
               <Textarea
@@ -1452,7 +1406,7 @@ function PlanTabEmptyState({
       bg="brand.subtleBg"
       border="1px dashed"
       borderColor="brand.neutralBorder"
-      borderRadius="lg"
+      borderRadius="md"
       p="6"
     >
       <Flex
@@ -1478,35 +1432,35 @@ function PlanTabEmptyState({
   );
 }
 
-function PlanSummaryList({
-  rows,
-}: {
-  rows: [string, string][];
-}) {
+function PlanSummaryList({ rows }: { rows: [string, string][] }) {
   return (
     <Box
       as="dl"
-      bg="brand.subtleBg"
       border="1px solid"
       borderColor="brand.neutralBorder"
       borderRadius="md"
       overflow="hidden"
+      bg="brand.white"
     >
       {rows.map(([label, value], index) => (
         <Grid
           key={label}
-          templateColumns={{ base: "minmax(112px, 0.9fr) minmax(0, 1.1fr)", sm: "minmax(180px, 0.7fr) minmax(0, 1.3fr)" }}
+          templateColumns={{
+            base: "minmax(112px, 0.9fr) minmax(0, 1.1fr)",
+            sm: "minmax(180px, 0.68fr) minmax(0, 1.32fr)",
+          }}
           gap="3"
           alignItems="center"
-          minH="44px"
+          minH="42px"
           px="4"
           py="2.5"
+          bg={index % 2 === 0 ? "brand.subtleBg" : "brand.white"}
           borderBottom={index === rows.length - 1 ? "0" : "1px solid"}
           borderColor="brand.neutralBorder"
           transition="background-color var(--motion-fast) var(--motion-ease-out)"
-          _hover={{ bg: "brand.white" }}
+          _hover={{ bg: "brand.successBg" }}
         >
-          <Text as="dt" color="text.muted" fontSize="13px" fontWeight="600">
+          <Text as="dt" color="text.muted" fontSize="13px" fontWeight="700">
             {label}
           </Text>
           <Text
@@ -1525,6 +1479,102 @@ function PlanSummaryList({
   );
 }
 
+function SectionPanel({
+  icon: Icon,
+  title,
+  description,
+  action,
+  children,
+}: {
+  icon: ElementType;
+  title: string;
+  description: string;
+  action?: React.ReactNode;
+  children: React.ReactNode;
+}) {
+  return (
+    <Box
+      bg="brand.white"
+      border="1px solid"
+      borderColor="brand.neutralBorder"
+      borderRadius="lg"
+      boxShadow="level1"
+      overflow="hidden"
+      minW="0"
+    >
+      <Flex
+        align={{ base: "stretch", md: "center" }}
+        justify="space-between"
+        direction={{ base: "column", md: "row" }}
+        gap="3"
+        px={{ base: "4", md: "5" }}
+        py="4"
+        borderBottom="1px solid"
+        borderColor="brand.neutralBorder"
+      >
+        <HStack gap="3" minW="0">
+          <Flex
+            align="center"
+            justify="center"
+            w="34px"
+            h="34px"
+            borderRadius="md"
+            bg="brand.successBg"
+            color="brand.accentText"
+            flexShrink="0"
+          >
+            <Icon size={18} />
+          </Flex>
+          <Box minW="0">
+            <Text
+              as="h3"
+              color="brand.neutralText"
+              fontSize="16px"
+              fontWeight="700"
+              lineHeight="1.2"
+            >
+              {title}
+            </Text>
+            <Text color="text.muted" fontSize="12px" mt="0.5">
+              {description}
+            </Text>
+          </Box>
+        </HStack>
+        {action ? <Box minW="0">{action}</Box> : null}
+      </Flex>
+
+      <Box p={{ base: "4", md: "5" }}>{children}</Box>
+    </Box>
+  );
+}
+
+function ScrollableTabs({
+  label,
+  children,
+}: {
+  label: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <Box w={{ base: "100%", md: "auto" }} overflowX="auto">
+      <HStack
+        as="div"
+        role="tablist"
+        aria-label={label}
+        gap="1"
+        minW="max-content"
+        bg="brand.subtleBg"
+        border="1px solid"
+        borderColor="brand.neutralBorder"
+        borderRadius="md"
+        p="1"
+      >
+        {children}
+      </HStack>
+    </Box>
+  );
+}
+
 function PlanBadge({ status }: { status: PlanStatus }) {
   const styles = {
     Active: DISPLAY_STATUS_STYLES.approved,
@@ -1538,7 +1588,7 @@ function PlanBadge({ status }: { status: PlanStatus }) {
       color={styles.color}
       borderColor={styles.borderColor}
       borderWidth={styles.borderWidth}
-      borderRadius="full"
+      borderRadius="sm"
       px="2.5"
       py="0.5"
       fontWeight={styles.fontWeight}
