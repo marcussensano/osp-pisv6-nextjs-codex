@@ -1,6 +1,7 @@
 export const BRAND_COLORS = {
   primaryGreen: "#109448",
   darkGreen: "#006838",
+  accentText: "#006838",
   softGreen: "#92DDBF",
   pastelPeaGreen: "#ACD6A6",
   seafoamGreen: "#92DDBF",

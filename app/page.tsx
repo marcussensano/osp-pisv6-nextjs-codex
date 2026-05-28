@@ -68,11 +68,11 @@ export default function Home() {
                       </Stat.ValueText>
                     </Stat.Root>
                   </Box>
-                  <Flex align="center" justify="center" w="42px" h="42px" borderRadius="md" bg="brand.successBg" color="brand.primaryGreen">
+                  <Flex align="center" justify="center" w="42px" h="42px" borderRadius="md" bg="brand.successBg" color="brand.accentText">
                     <Icon size={21} />
                   </Flex>
                 </Flex>
-                <HStack mt="4" color="brand.primaryGreen" fontSize="14px" fontWeight="600">
+                <HStack mt="4" color="brand.accentText" fontSize="14px" fontWeight="600">
                   <ArrowUpRight size={15} />
                   <Text>{item.change} this month</Text>
                 </HStack>
@@ -103,7 +103,7 @@ export default function Home() {
                   Static demo dashboard for plan management activity.
                 </Text>
               </Box>
-              <Badge bg="brand.successBg" color="brand.primaryGreen" px="3" py="1" borderRadius="sm">
+              <Badge bg="brand.successBg" color="brand.accentText" px="3" py="1" borderRadius="sm">
                 Live demo
               </Badge>
             </Flex>
@@ -111,7 +111,7 @@ export default function Home() {
               {["Account verification", "Plan servicing", "Request resolution"].map((label, index) => (
                 <Box key={label}>
                   <Flex justify="space-between" mb="2">
-                    <Text color="brand.darkGreen" fontSize="14px" fontWeight="600">
+                    <Text color="brand.accentText" fontSize="14px" fontWeight="600">
                       {label}
                     </Text>
                     <Text color="text.secondary" fontSize="14px" fontWeight="500">

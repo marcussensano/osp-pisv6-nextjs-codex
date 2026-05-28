@@ -254,7 +254,7 @@ function AccountIdentityBar() {
             h="48px"
             borderRadius="full"
             bg="brand.primaryGreen"
-            color="brand.white"
+            color="text.inverse"
             fontWeight="700"
             boxShadow="level1"
             flexShrink="0"
@@ -265,7 +265,7 @@ function AccountIdentityBar() {
             <HStack gap="2" wrap="wrap" mb="1">
               <Badge
                 bg="brand.successBg"
-                color="brand.primaryGreen"
+                color="brand.accentText"
                 borderColor="brand.primaryGreen"
                 borderWidth="1px"
                 borderRadius="full"
@@ -311,7 +311,7 @@ function AccountIdentityBar() {
             minW={{ base: "0", sm: "92px" }}
             size="sm"
             bg="brand.primaryGreen"
-            color="brand.white"
+            color="text.inverse"
             _hover={{ bg: "brand.darkGreen" }}
             transition="background-color var(--motion-fast) var(--motion-ease-out), transform var(--motion-fast) var(--motion-ease-out)"
             _active={{ transform: "translateY(1px)" }}
@@ -325,7 +325,7 @@ function AccountIdentityBar() {
             size="sm"
             variant="outline"
             borderColor="brand.softGreen"
-            color="brand.darkGreen"
+            color="brand.accentText"
             transition="background-color var(--motion-fast) var(--motion-ease-out), border-color var(--motion-fast) var(--motion-ease-out), transform var(--motion-fast) var(--motion-ease-out)"
             _hover={{ bg: "brand.successBg", borderColor: "brand.primaryGreen" }}
             _active={{ transform: "translateY(1px)" }}
@@ -387,7 +387,7 @@ function MetricCard({
           h="34px"
           borderRadius="md"
           bg="brand.successBg"
-          color="brand.primaryGreen"
+          color="brand.accentText"
           flexShrink="0"
         >
           <Icon size={17} />
@@ -436,7 +436,7 @@ function AccountDetailsCard({
             h="34px"
             borderRadius="md"
             bg="brand.successBg"
-            color="brand.primaryGreen"
+            color="brand.accentText"
           >
             <UserRound size={18} />
           </Flex>
@@ -475,7 +475,7 @@ function AccountDetailsCard({
                 size="xs"
                 borderRadius="full"
                 bg={activeTab === tab ? "brand.primaryGreen" : "transparent"}
-                color={activeTab === tab ? "brand.white" : "text.secondary"}
+                color={activeTab === tab ? "text.inverse" : "text.secondary"}
                 _hover={{
                   bg: activeTab === tab ? "brand.darkGreen" : "brand.mutedBg",
                 }}
@@ -589,7 +589,7 @@ function DetailTable({
           _hover={{ bg: "brand.successBg" }}
         >
           <HStack gap="2" color="text.muted">
-            {icon ? <Box color="brand.primaryGreen">{icon}</Box> : null}
+            {icon ? <Box color="brand.accentText">{icon}</Box> : null}
             <Text as="dt" fontSize="12px" fontWeight="600">
               {label}
             </Text>
@@ -646,19 +646,19 @@ function AddressPanel({
         h="38px"
         borderRadius="md"
         bg="brand.white"
-        color="brand.primaryGreen"
+        color="brand.accentText"
         flexShrink="0"
       >
         {icon}
       </Flex>
       <Box minW="0">
         <HStack gap="2" wrap="wrap">
-          <Text color="brand.darkGreen" fontSize="14px" fontWeight="600">
+          <Text color="brand.accentText" fontSize="14px" fontWeight="600">
             {title}
           </Text>
           <Badge
             bg="brand.white"
-            color={empty ? "text.muted" : "brand.primaryGreen"}
+            color={empty ? "text.muted" : "brand.accentText"}
             borderRadius="full"
             px="2"
           >
@@ -703,7 +703,7 @@ function EmptyState() {
         h="38px"
         borderRadius="full"
         bg="brand.successBg"
-        color="brand.primaryGreen"
+        color="brand.accentText"
         mb="3"
       >
         <BadgeCheck size={20} />
@@ -747,7 +747,7 @@ function PlanWorkspace() {
             h="34px"
             borderRadius="md"
             bg="brand.successBg"
-            color="brand.primaryGreen"
+            color="brand.accentText"
           >
             <WalletCards size={18} />
           </Flex>
@@ -762,7 +762,7 @@ function PlanWorkspace() {
         </HStack>
         <Badge
           bg="brand.successBg"
-          color="brand.primaryGreen"
+          color="brand.accentText"
           borderRadius="full"
           px="3"
           py="1"
@@ -949,7 +949,7 @@ function PlanListTable() {
               <PlanBadge status={plan.status} />
             </Flex>
             <Flex align="center" px="3" py="3">
-              <Text color="brand.darkGreen" fontSize="12px" fontWeight="600">
+              <Text color="brand.accentText" fontSize="12px" fontWeight="600">
                 {plan.insuranceStatus}
               </Text>
             </Flex>
@@ -1017,7 +1017,7 @@ function PlanListItem({
                 h="32px"
                 borderRadius="md"
                 bg="brand.white"
-                color="brand.primaryGreen"
+                color="brand.accentText"
                 flexShrink="0"
               >
                 <FileText size={17} />
@@ -1040,7 +1040,7 @@ function PlanListItem({
           <HStack gap="2" wrap="wrap" mt="2">
             <Badge
               bg="brand.white"
-              color="brand.darkGreen"
+              color="brand.accentText"
               borderColor="brand.neutralBorder"
               borderWidth="1px"
               borderRadius="full"
@@ -1092,7 +1092,7 @@ function SelectedPlan({ plan }: { plan: PlanRecord }) {
             h="40px"
             borderRadius="md"
             bg="brand.primaryGreen"
-            color="brand.white"
+            color="text.inverse"
             flexShrink="0"
           >
             <FileText size={19} />
@@ -1128,7 +1128,7 @@ function SelectedPlan({ plan }: { plan: PlanRecord }) {
             minW={{ base: "0", sm: "112px" }}
             size="sm"
             bg="brand.primaryGreen"
-            color="brand.white"
+            color="text.inverse"
             _hover={{ bg: "brand.darkGreen" }}
             transition="background-color var(--motion-fast) var(--motion-ease-out), transform var(--motion-fast) var(--motion-ease-out)"
             _active={{ transform: "translateY(1px)" }}
@@ -1167,7 +1167,7 @@ function SelectedPlan({ plan }: { plan: PlanRecord }) {
                 size="xs"
                 variant={tab.active ? "solid" : "ghost"}
                 bg={tab.active ? "brand.primaryGreen" : "brand.subtleBg"}
-                color={tab.active ? "brand.white" : "text.secondary"}
+                color={tab.active ? "text.inverse" : "text.secondary"}
                 borderRadius="full"
                 _hover={{
                   bg: tab.active ? "brand.darkGreen" : "brand.mutedBg",
@@ -1264,7 +1264,7 @@ function InfoTile({
       }}
     >
       <HStack gap="2" color="text.muted">
-        {icon ? <Box color="brand.primaryGreen">{icon}</Box> : null}
+        {icon ? <Box color="brand.accentText">{icon}</Box> : null}
         <Text fontSize="12px" fontWeight="600">
           {label}
         </Text>
