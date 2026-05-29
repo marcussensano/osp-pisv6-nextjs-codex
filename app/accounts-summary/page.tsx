@@ -579,8 +579,14 @@ function DetailTable({
       bg="brand.white"
     >
       {rows.map(([label, value], index) => (
-        <Box
+        <Grid
           key={label}
+          templateColumns={{
+            base: "minmax(112px, 0.9fr) minmax(0, 1.1fr)",
+            sm: "1fr",
+          }}
+          gap={{ base: "3", sm: "1" }}
+          alignItems={{ base: "center", sm: "flex-start" }}
           bg={index % 2 === 0 ? "brand.subtleBg" : "brand.white"}
           borderBottomWidth="1px"
           borderBottomStyle="solid"
@@ -588,12 +594,12 @@ function DetailTable({
           borderRightWidth={{ base: "0", md: "1px" }}
           borderRightStyle="solid"
           borderRightColor="brand.neutralBorder"
-          p="3"
-          minH="64px"
+          px="3"
+          minH={{ base: "42px", sm: "64px" }}
           transition="background-color var(--motion-fast) var(--motion-ease-out)"
           _hover={{ bg: "brand.successBg" }}
         >
-          <HStack gap="2" color="text.muted">
+          <HStack gap="2" color="text.muted" minW="0">
             {icon ? <Box color="brand.accentText">{icon}</Box> : null}
             <Text as="dt" fontSize="12px" fontWeight="600">
               {label}
@@ -604,11 +610,13 @@ function DetailTable({
             color="brand.neutralText"
             fontSize="14px"
             fontWeight="600"
-            mt="1"
+            mt={{ base: "0", sm: "1" }}
+            textAlign={{ base: "right", sm: "left" }}
+            overflowWrap="anywhere"
           >
             {value}
           </Text>
-        </Box>
+        </Grid>
       ))}
     </SimpleGrid>
   );
